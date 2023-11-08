@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-argo-web
-  namespace: default
   labels:
     app: test-argo
     component: web
