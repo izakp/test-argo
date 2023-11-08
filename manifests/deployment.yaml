@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: test-argo-web
-        image: 527742668712.dkr.ecr.us-east-1.amazonaws.com/test-argo:test-app-v3
+        image: 527742668712.dkr.ecr.us-east-1.amazonaws.com/test-argo:test-app-v4
         ports:
         - name: sandbox-http
           containerPort: 8080
