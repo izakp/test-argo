@@ -5,7 +5,6 @@ Dockerfile
 
 README.md
 LICENSE
-VERSION
 
 .DS_Store
 .AppleDouble
@@ -17,6 +16,3 @@ env
 log
 *.log
 tmp
-
-hokusai-sandbox
-.hokusai-tmp
