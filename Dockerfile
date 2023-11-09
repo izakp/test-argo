@@ -6,7 +6,6 @@ RUN mkdir /app
 ADD . /app
 WORKDIR /app
 
-RUN go build src/client/client.go
 RUN go build src/server/server.go
 
 ENV PORT 8080

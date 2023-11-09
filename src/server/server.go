@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"fmt"
+	"io/ioutil"
 	"log"
     "strconv"
 	"strings"
@@ -45,6 +46,13 @@ func root(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, world!")
 }
 
+func version(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadFile("VERSION")
+    failOnError(err, "Could not get version")
+    ver := string(b)
+	fmt.Fprintf(w, ver)
+}
+
 func ping (w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "PONG")
 }
@@ -58,6 +66,7 @@ func failOnError(err error, msg string) {
 func main() {
 	http.HandleFunc("/", root)
 	http.HandleFunc("/ping", ping)
+	http.HandleFunc("/version", version)
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "8080"
