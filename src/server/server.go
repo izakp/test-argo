@@ -3,10 +3,12 @@ package main
 import (
 	"os"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
-    "strconv"
+  "strconv"
 	"strings"
+	"net"
 	"net/http"
 	"time"
 )
@@ -57,6 +59,57 @@ func ping (w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "PONG")
 }
 
+func headers (w http.ResponseWriter, r *http.Request) {
+	for k, v := range r.Header {
+		fmt.Fprintf(w, "%v: %v\n", k, v)
+	}
+}
+
+func ipAddress (w http.ResponseWriter, r *http.Request) {
+	xForwardedFor := r.Header.Get("X-Forwarded-For")
+	if xForwardedFor != "" {
+		addresses := strings.Split(xForwardedFor, ",")
+		fmt.Fprintf(w, "Forwarded Source IP address: %s\n", strings.TrimSpace(addresses[0]))
+	}
+
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		fmt.Fprintf(w, "Error parsing IP address: %v\n", err)
+		return
+	}
+	fmt.Fprintf(w, "Source IP address: %s\n", ip)
+
+}
+
+func getUrl(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+  url := query.Get("url")
+  if url == "" {
+    fmt.Fprintf(w, "Must provide url query param")
+    return
+  }
+	fmt.Fprintf(os.Stderr, "Fetching URL %v\n", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Fprintf(w, "Error fetching URL: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Fprintf(w, "Request failed with status code: %d\n", resp.StatusCode)
+		return
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Fprintf(w, "Error reading response body: %v\n", err)
+		return
+	}
+
+	fmt.Fprintf(w, string(body))
+}
+
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
@@ -67,6 +120,9 @@ func main() {
 	http.HandleFunc("/", root)
 	http.HandleFunc("/ping", ping)
 	http.HandleFunc("/version", version)
+	http.HandleFunc("/ipAddress", ipAddress)
+	http.HandleFunc("/headers", headers)
+	http.HandleFunc("/getUrl", getUrl)
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "8080"
